@@ -1,3 +1,7 @@
-# Project 1
+# Bookreivew
 
-Web Programming with Python and JavaScript
+Simple book reivew website with goodreads.com api
+
+## Used
+
+Flask, PostgreSQL, Bootstrap
