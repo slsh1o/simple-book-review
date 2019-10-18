@@ -61,15 +61,6 @@ def login():
     username = request.form.get('username')
     password = request.form.get('user_password')
 
-    # type_s = db.execute(
-    #     'SELECT id FROM users_table WHERE name = :username',
-    #     {'username': username}
-    # ).first().id
-    # return render_template('index.html', message=type_s)
-    # check_it = (db.execute('SELECT id FROM users_table WHERE name = :username AND password_hash = :password',
-    #                        {'username': username, 'password': password}).rowcount != 0)
-    # return render_template('index.html', message=check_it)
-
     if (
             db.execute(
             'SELECT id FROM users_table WHERE name = :username AND password_hash = :password',
@@ -78,20 +69,9 @@ def login():
         session['user_id'] = db.execute('SELECT id FROM users_table WHERE name = :username',
                                         {'username': username}).first().id
         session['logged_in'] = True
-        # return render_template('index.html', message='Successfully logged in')
         return redirect(url_for('index'))
     else:
         return render_template('error.html', message='Invalid password or username')
-
-    # if password == check_password[0]:
-    #     session['user_id'] = db.execute(
-    #         'SELECT id FROM users_table WHERE name = :username',
-    #         {'username': username}
-    #     )
-    #     session['logged_in'] = True
-    #     return render_template('index.html', message='Successfully logged in')
-    # else:
-    #     return render_template('error.html', message='Invalid password or username')
 
 
 @app.route('/logout')
