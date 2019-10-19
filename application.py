@@ -79,3 +79,25 @@ def logout():
     session.pop('user_id', None)
     session['logged_in'] = False
     return redirect(url_for('index'))
+
+
+@app.route('/search/')
+def search():
+    search_query = request.args.get('search_query')
+
+    book = db.execute(
+        'SELECT * FROM books WHERE isbn = :isbn OR title = :title OR author = :author',
+        {'isbn': search_query, 'title': search_query, 'author': search_query}
+    ).fetchall()
+
+    if book is not None and book:
+        return render_template('books.html', books=book)
+    else:
+        search_query = '%' + search_query + '%'
+        books = db.execute(
+            'SELECT * FROM books WHERE \
+            isbn LIKE :isbn OR title LIKE :title OR author LIKE :author',
+            {'isbn': search_query, 'title': search_query, 'author': search_query}
+        ).fetchall()
+        return render_template('books.html', books=books)
+        # {{ url_for('book', book_id=book.id) }}
