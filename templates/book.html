@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card bg-light mb-3" style="max-width: 18rem;">
+    <div class="card-header">
+      <h5 class="card-title">Book "{{ book.title }}"</h5>
+    </div>
+</div>
+<div class="card" style="width: 18rem;">
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">Author: {{ book.author }}</li>
+      <li class="list-group-item">Published: {{ book.year }}</li>
+      <li class="list-group-item">ISBN: {{ book.isbn }}</li>
+    </ul>
+</div>
+{% endblock %}

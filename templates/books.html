@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="list-group">
+    {% if books %}
+    {% for book in books %}
+        <a href="{{ url_for('book', book_id=book.id) }}" class="list-group-item list-group-item-action">
+        "{{ book.title }}" by {{ book.author}}
+        </a>
+    {% endfor %}
+    {% else %}
+    <a class="list-group-item list-group-item-action list-group-item-danger disabled" tabindex="-1" aria-disabled="true">
+        Nothing found
+    </a>
+    {% endif %}
+</div>
+{% endblock %}
