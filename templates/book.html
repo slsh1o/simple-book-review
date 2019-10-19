@@ -1,9 +1,9 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="card bg-light mb-3" style="max-width: 18rem;">
+<div class="card bg-light mb-3 mt-3">
     <div class="card-header">
-      <h5 class="card-title">Book "{{ book.title }}"</h5>
+      <h5>Book "{{ book.title }}"</h5>
     </div>
 </div>
 <div class="card" style="width: 18rem;">
@@ -11,6 +11,54 @@
       <li class="list-group-item">Author: {{ book.author }}</li>
       <li class="list-group-item">Published: {{ book.year }}</li>
       <li class="list-group-item">ISBN: {{ book.isbn }}</li>
+      <li class="list-group-item">Bookreads rating: #Badge here</li>
     </ul>
 </div>
+<div class="card bg-light mb-3 mt-3">
+    <div class="card-header">
+      <h5>Reviews</h5>
+    </div>
+</div>
+{% if reviews %}
+{% for review in reviews %}
+<div class="card col-6 mb-1">
+  <div class="card-body">
+    <h5 class="card-title">{{ review.user_name }}</h5>
+    <h6 class="card-subtitle mb-2 text-muted">rated it {{ review.rating }}</h6>
+    <hr>
+    <p class="card-text">
+        {{ review.user_text }}
+    </p>
+  </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="alert alert-secondary">
+    No one left review yet. Be the first!
+</div>
+{% endif %}
+<div class="mt-3">
+  <h5>Left review</h5>
+  <hr>
+</div>
+<form action="{{ url_for('book', book_id=book.id) }}" method="post" class="mb-3">
+  <div class="form-group">
+    <textarea class="form-control" name="user_text" rows="3"></textarea>
+  </div>
+  <div class="form-row align-items-center">
+    <div class="col-auto my-1">
+      <select class="custom-select mr-sm-2" name="rating">
+        <option selected>Rate book</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+    </div>
+    <div class="col-auto my-1">
+      <button type="submit" class="btn btn-primary">Post</button>
+    </div>
+  </div>
+</form>
 {% endblock %}
