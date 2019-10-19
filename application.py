@@ -30,7 +30,7 @@ goodreas_api_key = os.getenv("GOODREADS_API_KEY")
 
 @app.route("/")
 def index():
-    if session['logged_in']:
+    if session.get('logged_in'):
         username = db.execute('SELECT name FROM users_table WHERE id = :user_id',
                               {'user_id': session.get('user_id')}).first().name
         message = f'Welcome, {username}'
@@ -107,10 +107,38 @@ def search():
         return render_template('books.html', books=books)
 
 
-@app.route('/book/<int:book_id>')
+@app.route('/book/<int:book_id>', methods=['GET', 'POST'])
 def book(book_id):
-    r_book = db.execute(
-        'SELECT isbn, title, author, year FROM books WHERE id = :id',
+    if request.method == 'POST':
+        user_id = session.get('user_id')
+        if not session.get('logged_in'):
+            return redirect(url_for('login'))
+        elif (
+            db.execute('SELECT r.id FROM reviews r INNER JOIN users_table ON r.user_id = :uid \
+                INNER JOIN books ON r.books_id = :bid',
+                       {'uid': user_id, 'bid': book_id}).rowcount != 0
+        ):
+            return render_template('error.html', message='You have already posted review for this book')
+        else:
+            text = request.form.get('user_text')
+            rating = request.form.get('rating')
+            db.execute(
+                'INSERT INTO reviews (rating, user_text, user_id, books_id) \
+                VALUES (:rating, :user_text, :user_id, :book_id)',
+                {'rating': rating, 'user_text': text,
+                    'user_id': user_id, 'book_id': book_id}
+            )
+            db.commit()
+            return redirect(url_for('book', book_id=book_id))
+
+    book = db.execute(
+        'SELECT id, isbn, title, author, year FROM books WHERE id = :id',
         {'id': book_id}
     ).first()
-    return render_template('book.html', book=r_book)
+    reviews = db.execute(
+        'SELECT u.name user_name, r.user_text user_text, r.rating rating FROM reviews r \
+        INNER JOIN users_table u ON r.user_id = u.id \
+        WHERE r.books_id = :bid',
+        {'bid': book_id}
+    ).fetchall()
+    return render_template('book.html', book=book, reviews=reviews)
