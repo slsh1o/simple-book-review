@@ -12,6 +12,8 @@ app = Flask(__name__)
 # Check for environment variable
 if not os.getenv("DATABASE_URL_PROJECT1"):
     raise RuntimeError("DATABASE_URL is not set")
+if not os.getenv("GOODREADS_API_KEY"):
+    raise RuntimeError("GOODREADS_API_KEY is not set")
 
 # Configure session to use filesystem
 app.config["SESSION_PERMANENT"] = False
@@ -21,6 +23,9 @@ Session(app)
 # Set up database
 engine = create_engine(os.getenv("DATABASE_URL_PROJECT1"))
 db = scoped_session(sessionmaker(bind=engine))
+
+# Set goodreads api key
+goodreas_api_key = os.getenv("GOODREADS_API_KEY")
 
 
 @app.route("/")
@@ -88,7 +93,7 @@ def search():
     book = db.execute(
         'SELECT * FROM books WHERE isbn = :isbn OR title = :title OR author = :author',
         {'isbn': search_query, 'title': search_query, 'author': search_query}
-    ).fetchall()
+    ).first()
 
     if book is not None and book:
         return render_template('books.html', books=book)
@@ -100,4 +105,12 @@ def search():
             {'isbn': search_query, 'title': search_query, 'author': search_query}
         ).fetchall()
         return render_template('books.html', books=books)
-        # {{ url_for('book', book_id=book.id) }}
+
+
+@app.route('/book/<int:book_id>')
+def book(book_id):
+    r_book = db.execute(
+        'SELECT isbn, title, author, year FROM books WHERE id = :id',
+        {'id': book_id}
+    ).first()
+    return render_template('book.html', book=r_book)
