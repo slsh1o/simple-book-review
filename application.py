@@ -1,8 +1,9 @@
 import os
+import requests
 
 from flask import (
     Flask, session, render_template, request,
-    redirect, url_for)
+    redirect, url_for, jsonify)
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -25,7 +26,7 @@ engine = create_engine(os.getenv("DATABASE_URL_PROJECT1"))
 db = scoped_session(sessionmaker(bind=engine))
 
 # Set goodreads api key
-goodreas_api_key = os.getenv("GOODREADS_API_KEY")
+goodreads_api_key = os.getenv("GOODREADS_API_KEY")
 
 
 @app.route("/")
@@ -131,14 +132,31 @@ def book(book_id):
             db.commit()
             return redirect(url_for('book', book_id=book_id))
 
+    # fetch isbn for call to goodreads api
+    isbn = db.execute(
+        'SELECT isbn FROM books WHERE id = :id',
+        {'id': book_id}
+    ).first()
+
+    # request to goodreads api by isbn
+    res = requests.get("https://www.goodreads.com/book/review_counts.json",
+                       params={'key': goodreads_api_key, 'isbns': isbn})
+    # check response to be 200 or ignore goodreads' raiting
+    book_rating = ''
+    if res.ok:
+        book_rating = {'count': res.json()['books'][0]['work_ratings_count'],
+                       'rating': res.json()['books'][0]['average_rating']}
+
+    # fetch book from db by id
     book = db.execute(
         'SELECT id, isbn, title, author, year FROM books WHERE id = :id',
         {'id': book_id}
     ).first()
+    # fetch all reviews for this book
     reviews = db.execute(
         'SELECT u.name user_name, r.user_text user_text, r.rating rating FROM reviews r \
         INNER JOIN users_table u ON r.user_id = u.id \
         WHERE r.books_id = :bid',
         {'bid': book_id}
     ).fetchall()
-    return render_template('book.html', book=book, reviews=reviews)
+    return render_template('book.html', book=book, reviews=reviews, book_rating=book_rating)

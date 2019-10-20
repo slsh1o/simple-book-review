@@ -6,12 +6,16 @@
       <h5>Book "{{ book.title }}"</h5>
     </div>
 </div>
-<div class="card" style="width: 18rem;">
+<div class="card col-6">
     <ul class="list-group list-group-flush">
       <li class="list-group-item">Author: {{ book.author }}</li>
       <li class="list-group-item">Published: {{ book.year }}</li>
       <li class="list-group-item">ISBN: {{ book.isbn }}</li>
-      <li class="list-group-item">Bookreads rating: #Badge here</li>
+      {% if book_rating %}
+      <li class="list-group-item"><a href="https://www.goodreads.com" target="_blank">
+        goodreads</a>: rating {{ book_rating.rating }} · {{ book_rating.count }} reviews
+      </li>
+      {% endif %}
     </ul>
 </div>
 <div class="card bg-light mb-3 mt-3">
