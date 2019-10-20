@@ -160,3 +160,34 @@ def book(book_id):
         {'bid': book_id}
     ).fetchall()
     return render_template('book.html', book=book, reviews=reviews, book_rating=book_rating)
+
+
+@app.route('/api/<isbn>')
+def api_isbn(isbn):
+    book = db.execute(
+        'SELECT id, title, author, year, isbn FROM books WHERE isbn = :isbn',
+        {'isbn': isbn}
+    ).first()
+
+    count = db.execute(
+        'SELECT COUNT(*) FROM reviews WHERE books_id = :id',
+        {'id': book.id}
+    ).first()
+    score = db.execute(
+        'SELECT AVG(rating) FROM reviews WHERE books_id = :id',
+        {'id': book.id}
+    ).first()
+
+    if score[0] is not None:
+        score = ('%.2f' % score[0]).rstrip('0').rstrip('.')
+    else:
+        score = 'no data'
+
+    return jsonify({
+        "title": book.title,
+        "author": book.author,
+        "year": book.year,
+        "isbn": book.isbn,
+        "review_count": count[0],
+        "average_score": score
+    })
