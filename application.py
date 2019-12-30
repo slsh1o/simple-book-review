@@ -91,15 +91,18 @@ def logout():
 def search():
     search_query = request.args.get('search_query')
 
+    # db.execute.first() return RowProxy object but template expects to see the list of RowProxy objects
+
     book = db.execute(
         'SELECT * FROM books WHERE isbn = :isbn OR title = :title OR author = :author',
         {'isbn': search_query, 'title': search_query, 'author': search_query}
     ).first()
 
     if book is not None and book:
+        book = [book]
         return render_template('books.html', books=book)
     else:
-        search_query = '%' + search_query + '%'
+        search_query = f'%{search_query}%'
         books = db.execute(
             'SELECT * FROM books WHERE \
             isbn LIKE :isbn OR title LIKE :title OR author LIKE :author',
