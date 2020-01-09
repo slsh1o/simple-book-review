@@ -118,10 +118,10 @@ def book(book_id):
         if not session.get('logged_in'):
             return redirect(url_for('login'))
         elif (
+            # Check if user has already leave a comment
             db.execute('SELECT r.id FROM reviews r INNER JOIN users_table ON r.user_id = :uid \
                 INNER JOIN books ON r.books_id = :bid',
-                       {'uid': user_id, 'bid': book_id}).rowcount != 0
-        ):
+                       {'uid': user_id, 'bid': book_id}).rowcount != 0):
             return render_template('error.html', message='You have already posted review for this book')
         else:
             text = request.form.get('user_text')
